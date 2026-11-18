@@ -31,7 +31,6 @@ Com o InfraMind, o profissional poderá:
 | pypdf                        | Extração de texto do PDF                      |
 | scikit-learn (TF-IDF)        | Indexação e busca de trechos relevantes (RAG) |
 | SQLite                       | Histórico de conversas                        |
-| ReportLab                    | Geração do PDF da base de conhecimento        |
 
 ## 🧠 Como funciona?
 
@@ -43,7 +42,7 @@ O InfraMind usa **RAG (Retrieval-Augmented Generation)**: o modelo responde com 
 4. O modelo responde em português, citando o ID do caso (ex.: `INC-001`), com causa provável, comandos de diagnóstico e solução. A resposta é exibida em streaming, com um expander "Trechos utilizados".
 5. Se a documentação não cobrir o problema, o assistente informa isso em vez de inventar uma resposta.
 
-> A base de conhecimento é fixa: **não há upload de documentos** pela interface. Para alterá-la, edite [casos.py](casos.py) e gere o PDF novamente.
+> A base de conhecimento é fixa: **não há upload de documentos** pela interface. Para alterá-la, substitua o arquivo `docs/base_conhecimento_infra.pdf` (mantendo o formato `INC-XXX - Título` em cada caso).
 
 ## 📚 Base de conhecimento
 
@@ -55,12 +54,6 @@ O arquivo `docs/base_conhecimento_infra.pdf` é um documento **fictício** com 2
 - Containers e Kubernetes, Cloud, Backup, RAID, e-mail e Segurança (certificado expirado, ransomware).
 
 Cada caso traz: severidade, impacto, sintomas, causa provável, comandos de diagnóstico, solução, validação, prevenção e escalonamento. O documento inclui ainda política de severidade, cheat sheet de comandos, checklist pós-incidente e glossário.
-
-Para regenerar o PDF após editar [casos.py](casos.py):
-
-```bash
-python generate_pdf.py
-```
 
 ## 🚀 Como utilizar
 
@@ -111,8 +104,6 @@ O histórico é salvo por usuário em `data/inframind.db` (SQLite, criado automa
 InfraMind/
 ├── app.py                  # Interface Streamlit: login, chat, histórico e RAG
 ├── storage.py              # Persistência das conversas (SQLite)
-├── casos.py                # Dados dos incidentes (fonte do PDF)
-├── generate_pdf.py         # Gerador do PDF da base de conhecimento
 ├── docs/
 │   └── base_conhecimento_infra.pdf
 ├── data/                   # Banco SQLite (gerado em execução)
