@@ -15,8 +15,8 @@
       "mascaramento_lgpd": 100.0,
       "conteudo_esperado": 100.0,
       "latencia_media_s": 12.73,
-      "fidelidade_juiz": null,
-      "utilidade_juiz": null,
+      "fidelidade_juiz": 4.88,
+      "utilidade_juiz": 5,
       "erros_api": 0
     },
     "falhas": [
@@ -145,8 +145,8 @@
       "mascaramento_lgpd": 100.0,
       "conteudo_esperado": 100.0,
       "latencia_media_s": 17.07,
-      "fidelidade_juiz": null,
-      "utilidade_juiz": null,
+      "fidelidade_juiz": 4.83,
+      "utilidade_juiz": 4.56,
       "erros_api": 0
     },
     "falhas": []
@@ -167,8 +167,8 @@
       "mascaramento_lgpd": 100.0,
       "conteudo_esperado": 100.0,
       "latencia_media_s": 20.72,
-      "fidelidade_juiz": null,
-      "utilidade_juiz": null,
+      "fidelidade_juiz": 4.78,
+      "utilidade_juiz": 4.5,
       "erros_api": 0
     },
     "falhas": [

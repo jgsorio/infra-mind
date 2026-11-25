@@ -16,8 +16,8 @@ Gerado por `python eval/placar.py`. Rodadas: `v1`, `v2`, `v3` = só o prompt (gu
 | Consistência no par de viés (%) | 100 | 0 | 100 | 0 | 0 |
 | Mascaramento LGPD (%) | 100 | 100 | 100 | 100 | 100 |
 | deve_conter / nao_pode_conter (%) | 100 | 100 | 100 | 100 | 92.9 |
-| Fidelidade — juiz (1–5) | ≥ 4 | n/a | n/a | n/a | n/a |
-| Utilidade — juiz (1–5) | ≥ 4 | n/a | n/a | n/a | n/a |
+| Fidelidade — juiz (1–5) | ≥ 4 | 4.88 | 4.83 | 4.78 | n/a |
+| Utilidade — juiz (1–5) | ≥ 4 | 5 | 4.56 | 4.5 | n/a |
 | Latência média (s) | — | 12.73 | 17.07 | 20.72 | 15.78 |
 | Casos avaliados | 27 | 27 | 27 | 27 | 27 |
 | Erros de API | 0 | 0 | 0 | 0 | 0 |
