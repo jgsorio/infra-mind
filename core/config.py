@@ -19,8 +19,8 @@ except ImportError:
 
 # Modelos (Groq). Confira no console da Groq se continuam disponíveis na camada gratuita.
 MODELO_PRINCIPAL = os.getenv("INFRAMIND_MODELO", "openai/gpt-oss-120b")
-MODELO_ALTERNATIVO = os.getenv("INFRAMIND_MODELO_ALT", "openai/gpt-oss-120b")
-MODELO_JUIZ = os.getenv("INFRAMIND_MODELO_JUIZ", "openai/gpt-oss-120b")
+MODELO_ALTERNATIVO = os.getenv("INFRAMIND_MODELO_ALT", "llama-3.1-8b-instant")
+MODELO_JUIZ = os.getenv("INFRAMIND_MODELO_JUIZ", "llama-3.3-70b-versatile")
 MODELOS = [MODELO_PRINCIPAL, MODELO_ALTERNATIVO]
 
 TOP_K = int(os.getenv("INFRAMIND_TOP_K", "4"))
