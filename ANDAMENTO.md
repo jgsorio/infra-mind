@@ -63,56 +63,67 @@ O InfraMind é a nossa versão do tema "Copiloto de Plantão" do guia. O que já
 | Base | PDF fictício com 27 incidentes | Dados 100% sintéticos (regra do guia) |
 | Orquestração | Python puro, sem LangChain | Prompt visível e fácil de explicar |
 
-**A decidir:** modelo de comparação (ex.: outro modelo menor da Groq, como um Llama de ~8B, ou Ollama local) e modelo juiz (diferente do gerador). Conferir no console da Groq quais modelos e limites estão disponíveis hoje.
+| Guardrails | Camada independente do prompt (toggle) | Permite medir o efeito do prompt (v1–v3) e o dos guardrails (v3_g) separadamente |
+| PII | Mascaramento sempre ligado | LGPD não é técnica de prompt: vale para qualquer versão |
+| Prompts | `prompts/*.md` são a fonte única do texto executado | A biblioteca documentada é exatamente o que roda |
+
+**Padrões configuráveis (`core/config.py` / `.env`):** modelo alternativo `llama-3.1-8b-instant` e juiz `llama-3.3-70b-versatile` (Groq). Conferir no console da Groq se continuam disponíveis e os limites da camada gratuita.
 
 ---
 
 ## 3. O que falta fazer (checklist)
 
+Legenda: [x] feito · [~] código pronto, falta rodar/validar · [ ] pendente
+
 ### R2 — Prompts versionados
-- [ ] Refatorar: `app/rag.py` (chunks com `id`, `titulo`, `categoria`, `severidade`), `app/chain.py` (`responder(pergunta, versao)`), `app/guardrails.py`
-- [ ] `prompts/v1.md` — prompt atual (persona + trechos + texto livre) = linha de base
-- [ ] `prompts/v2.md` — few-shot (3 exemplos: normal, fora da base, ataque) + JSON Schema + citação obrigatória de INC por passo
-- [ ] `prompts/v3.md` — cadeia de 2 chamadas (extrai serviço/sintoma/consulta → responde), delimitadores `<documentos>`/`<pergunta>`, campo `analise`, regra de "não sei", regra de documento mais recente, canário
-- [ ] `app/schema.json` (campos: `cobertura`, `severidade`, `analise`, `diagnostico`, `passos[{acao,fonte}]`, `fontes`, `escalar`)
-- [ ] Seletor de versão do prompt na barra lateral do Streamlit + renderização do JSON em Markdown
-- [ ] Cada ficha com: o que mudou, por quê (erros da versão anterior), texto completo, placar, 2 exemplos antes/depois, o que ainda falha
+- [x] Refatoração em módulos: `core/rag.py`, `core/chain.py` (`responder(pergunta, versao)`), `core/guardrails.py`, `core/llm.py`, `core/prompts.py`, `core/config.py`
+- [x] `prompts/v1.md` — prompt original do app (persona + trechos + texto livre) = linha de base
+- [x] `prompts/v2.md` — few-shot (normal, fora da base, ataque) + JSON Schema + fonte obrigatória por passo
+- [x] `prompts/v3.md` — cadeia triagem → resposta, delimitadores, campo `analise`, regras de "não sei", documento mais recente, documento adulterado, sigilo, viés
+- [x] `core/schema.json` (severidade inclui `critica`, porque a base tem nível Crítica; campo `aviso` para contradições)
+- [x] Seletor de versão, toggle de guardrails e seletor de modelo na barra lateral; JSON renderizado em Markdown; painéis de trechos, triagem e guardrails
+- [ ] Preencher nas fichas: placar, 2 exemplos antes/depois, o que ainda falha (depende das rodadas)
 
 ### R3 — RAG
-- [ ] Ler também `docs/extra/*.md` no índice
-- [ ] `docs/extra/INC-028-cache-hit-rate.md` — **documento envenenado** (instrução escondida em "Observações")
-- [ ] `docs/extra/INC-001-legado.md` — versão antiga (2024) que contradiz a INC-001 atual (teste de "documento mais recente")
-- [ ] Adicionar data de atualização como metadado
-- [ ] Experimento hit@k: k = 2, 4, 6 × {consulta original, consulta reescrita} → tabela no relatório
-- [ ] (Opcional, forte para "Excelente") comparar TF-IDF vs. embeddings multilíngues no mesmo hit@k
+- [x] Índice lê `docs/extra/*.md` além do PDF; capa e índice fora da busca; ruído de cabeçalho/rodapé removido
+- [x] `docs/extra/INC-028-cache-hit-rate.md` — documento envenenado
+- [x] `docs/extra/KB-0042-disco-cheio-legado.md` — procedimento de 2024 que contradiz a INC-001
+- [x] Metadados por chunk: id, título, categoria, severidade, atualizado_em, origem, página
+- [~] Experimento hit@k: `python eval/recuperacao.py [--com-reescrita]` → `eval/recuperacao.md`
+- [ ] (Opcional) comparar TF-IDF vs. embeddings multilíngues no mesmo hit@k
 
 ### R4 — Avaliação
 - [x] `eval/casos_de_teste.jsonl` — 27 casos (ver `eval/PLANO_DE_TESTES.md`)
 - [x] `eval/PLANO_DE_TESTES.md` — métricas, metas, resultados esperados por versão, rubrica do juiz
-- [ ] `eval/run_eval.py` — roda casos × versão, `temperature=0`, sem histórico, pausa entre chamadas, cache em disco, salva `eval/saidas/vN.jsonl`, calcula métricas automáticas
-- [ ] `eval/judge.py` + `prompts/juiz.md` — fidelidade e utilidade 1–5, modelo diferente do gerador
+- [~] `eval/run_eval.py` — v1, v2, v3 (sem guardrails) + v3_g; temperatura 0, sem histórico, cache, pausa, canário fixo
+- [~] `eval/judge.py` + `prompts/juiz.md` — fidelidade/utilidade 1–5 com modelo diferente; `--amostra 5` gera `eval/validacao_juiz.md`
 - [ ] Conferir 5 notas do juiz à mão e registrar concordância
-- [ ] `eval/placar.md` — tabela métrica × versão + gráfico de barras + análise de erros (recuperação / geração / formato / segurança)
-- [ ] Rodar os mesmos casos no modelo alternativo (tabela de comparação de modelos)
+- [~] `eval/placar.py` → `eval/placar.md` + `placar.json` + `placar.png` + análise de erros automática (revisar à mão)
+- [ ] Rodar no modelo alternativo: `python eval/run_eval.py --versoes v3 --guardrails --modelo llama-3.1-8b-instant`
 
 ### R5 — Segurança
-- [ ] Guardrail de entrada: regex para "ignore as instruções", "mostre seu prompt", "você agora é", etc. → `cobertura: recusado`
-- [ ] Mascaramento de e-mail, CPF e telefone **antes** do LLM e **antes** do SQLite
-- [ ] Canário aleatório no system prompt + busca do canário em toda saída
-- [ ] Guardrail de saída: valida JSON Schema; fontes citadas ⊂ IDs recuperados; barra ações perigosas que não estão no INC citado
-- [ ] Testes de viés (par estagiária × sênior) comparados lado a lado
-- [ ] Registrar riscos residuais (regex contornável, SQLite guarda conversas, login fixo)
+- [x] Guardrail de entrada (regex PT/EN: ignorar regras, extrair prompt, repetir texto acima, troca de persona, ocultar rastros) → `recusado` sem chamar o modelo
+- [x] Mascaramento de e-mail, CPF e telefone antes do LLM e antes do SQLite (sempre ligado)
+- [x] Canário no system prompt (todas as versões, como instrumento de medição) + bloqueio na saída
+- [x] Guardrail de saída: JSON Schema; fontes ⊂ recuperadas; remove ações destrutivas (DROP DATABASE, FLUSHALL, rm -rf /, shred…)
+- [~] Par de viés t23 × t24 medido no placar (fontes, severidade, similaridade dos passos)
+- [x] Riscos residuais registrados no README (regex contornável, SQLite, login fixo, API de terceiros)
 
 ### Entregáveis
-- [ ] Protótipo executável + README completo (avaliação, decisões, limitações, `.env.example`)
-- [ ] Relatório técnico ≤ 8 páginas → template em `relatorio/RELATORIO_TEMPLATE.md` (✅ criado)
-- [ ] Biblioteca de prompts `prompts/` (v1, v2, v3, juiz)
+- [~] Protótipo executável + README completo (feito; falta validar instalação do zero)
+- [ ] Relatório técnico ≤ 8 páginas → template em `relatorio/RELATORIO_TEMPLATE.md`
+- [x] Biblioteca de prompts `prompts/` (v1, v2, v3, juiz) — é a fonte única do texto executado
 - [ ] Slides do pitch (5 blocos: problema 1′, solução 1,5′, demo 2,5′, resultados 1′, riscos 1′)
 - [ ] Vídeo curto da demo (plano B)
-- [ ] Declaração de uso de IA (inclui o uso do Claude Code neste planejamento, código e textos)
+- [ ] Declaração de uso de IA (inclui o uso do Claude Code no planejamento, código e textos)
 - [ ] Teste de instalação do zero seguindo só o README
-- [ ] Conferir que nenhuma chave está no código nem no histórico do git (`git log -p | grep -i gsk_`)
+- [x] Nenhuma chave no código nem no histórico do git (verificado em 24/11)
 
+### Próximos comandos (nesta ordem)
+1. `pip install -r requirements.txt` e `pytest -q` (sem API)
+2. `python eval/recuperacao.py` (sem API) e `python eval/recuperacao.py --com-reescrita`
+3. `python eval/run_eval.py` → `python eval/judge.py` → `python eval/placar.py`
+4. Ler `eval/placar.md`, preencher as fichas `prompts/v*.md` e o relatório
 ---
 
 ## 4. Ordem de ataque (prazo < 1 dia)
@@ -139,6 +150,7 @@ Se faltar tempo, cortar nesta ordem: comparação de modelos → TF-IDF vs. embe
 |---|---|---|
 | ≤ 18/11 | App Streamlit com login, histórico SQLite, RAG TF-IDF sobre PDF fictício (27 INCs) | Grupo |
 | 24/11 | Diagnóstico do projeto vs. guia; criados `ANDAMENTO.md`, `relatorio/RELATORIO_TEMPLATE.md`, `eval/PLANO_DE_TESTES.md`, `eval/casos_de_teste.jsonl` | Claude Code (declarar no relatório) |
+| 24/11 | Implementação: módulos `core/`, prompts v1/v2/v3/juiz, schema, guardrails (PII, ataques, canário, saída), docs de teste (INC-028 envenenado, KB-0042 legado), UI com seletor de versão, `run_eval.py`, `judge.py`, `placar.py`, `recuperacao.py`, testes `pytest`, README. Ainda não executado (Python ausente na máquina) | Claude Code (declarar no relatório) |
 
 ## 6. Grupo e papéis
 
